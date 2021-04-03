@@ -3,6 +3,7 @@ var bodyParser = require("body-parser");
 var session = require('express-session');
 var path = require('path');
 const mongoose = require('mongoose');
+var cors = require('cors')
 
 //mongoose.connect('mongodb+srv://cdCENTIXO:gw2ksoft@cluster0.6vkmg.mongodb.net/dbCENTIXO?retryWrites=true&w=majority');
 //mongoose.connect('mongodb://127.0.0.1:27017/MyDB');
@@ -37,7 +38,7 @@ try {
 	//await findListingByName(client, "Lovely Loft");
 
 	var app = express();
-
+	app.use(cors());
 	app.use(bodyParser.urlencoded({ extended: true }));
 	app.use(bodyParser.json());
 
@@ -51,12 +52,12 @@ try {
 
 		console.log(username);
 		console.log(password);
-		
+
 		try {
-			const results = await client.db("dbCENTIXO").collection("details").findOne({ name: username});
-			console.log(results.password);
+			const results = await client.db("dbCENTIXO").collection("details").findOne({ name: username });
+			//console.log(results.password);
 			myPlaintextPassword = request.body.password;
-			
+
 			if (bcrypt.compareSync(myPlaintextPassword, results.password)) {
 				console.log(`Found a listing in the collection with name '${username}'`);
 				//console.log(results);
@@ -84,8 +85,94 @@ try {
 			response.sendFile(__dirname + '/views/login.html');
 		});
 	});
-	app.listen(3000);
 
+	app.get('/Retrieve',async function (request, response) {
+		try {
+			
+			const results = await client.db("dbCENTIXO").collection("details").find().toArray();
+			response.send(results)
+		}
+		catch (e) {
+			console.error(e);
+		}
+	});
+
+	app.post('/RetrieveOne', async function (request, response) {
+		try {
+			const gettask = {
+				id: request.body.id
+			}
+			const results = await client.db("dbCENTIXO").collection("details").findOne(gettask);
+			response.send(results)
+		}
+		catch (e) {
+			console.error(e);
+		}
+	});
+
+	app.post('/Add',async function (request, response) {
+		try {
+			const idr = Math.random();
+			const newTask = {
+				text:request.body.text,
+				day:request.body.day,
+				reminder: request.body.reminder,
+				id:idr
+			}
+			const insertres = await client.db("dbCENTIXO").collection("details").insertOne(newTask);
+			if (insertres.insertedCount > 0)
+			{
+				const results=await client.db("dbCENTIXO").collection("details").findOne({id:idr});
+				response.send(results)
+			}
+		}
+		catch (e) {
+			console.error(e);
+		}
+	});
+	app.post('/Delete', async function (request, response) {
+		try {
+			//console.log(request.body.id);
+			const deltask = {
+				id: request.body.id
+			}
+			const results = await client.db("dbCENTIXO").collection("details").deleteOne(deltask);
+			response.send(results)
+		}
+		catch (e) {
+			console.error(e);
+		}
+	});
+
+	app.post('/Update', async function (request, response) {
+		try {
+			// create a filter for a movie to update
+			const filter = { text: request.body.text};
+			// this option instructs the method to create a document if no documents match the filter
+			const options = { upsert: true };
+			// create a document that sets the plot of the movie
+			const updateDoc = {
+			  $set: {
+				reminder:
+				  request.body.reminder,
+			  },
+			};
+			const updres=await client.db("dbCENTIXO").collection("details").updateOne(filter, updateDoc, options);
+			if(updres.matchedCount>0){
+				const gettask = {
+				id: request.body.id
+			}
+			const results = await client.db("dbCENTIXO").collection("details").findOne(gettask);
+				response.send(results)
+			}
+		}
+		catch (e) {
+			console.error(e);
+		}
+	});
+
+	app.listen(3005);
+	console.log('server running at locahost 3005');
 
 } catch (e) {
 	console.error(e);
