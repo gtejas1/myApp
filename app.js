@@ -1,19 +1,15 @@
-var express = require("express");
-var bodyParser = require("body-parser");
-var session = require('express-session');
-var path = require('path');
+const express = require("express");
+const bodyParser = require("body-parser");
+const session = require('express-session');
+const path = require('path');
 const mongoose = require('mongoose');
-var cors = require('cors')
+const cors = require('cors');
 
 //mongoose.connect('mongodb+srv://cdCENTIXO:gw2ksoft@cluster0.6vkmg.mongodb.net/dbCENTIXO?retryWrites=true&w=majority');
 //mongoose.connect('mongodb://127.0.0.1:27017/MyDB');
 const { MongoClient } = require('mongodb');
 
 
-/**
- * Connection URI. Update <username>, <password>, and <your-cluster-url> to reflect your cluster.
- * See https://docs.mongodb.com/ecosystem/drivers/node/ for more details
- */
 const uri = "mongodb+srv://cdCENTIXO:gw2ksoft@cluster0.6vkmg.mongodb.net/dbCENTIXO?retryWrites=true&w=majority";
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
@@ -37,7 +33,7 @@ try {
 	// );
 	//await findListingByName(client, "Lovely Loft");
 
-	var app = express();
+	const app = express();
 	app.use(cors());
 	app.use(bodyParser.urlencoded({ extended: true }));
 	app.use(bodyParser.json());
@@ -47,8 +43,8 @@ try {
 	});
 
 	app.post('/auth', async function (request, response) {
-		var username = request.body.username;
-		var password = request.body.password;
+		const username = request.body.username;
+		const password = request.body.password;
 
 		console.log(username);
 		console.log(password);
@@ -71,10 +67,10 @@ try {
 		}
 	});
 	app.post('/sign_up', async function (request, response) {
-		var username = request.body.name;
-		var email = request.body.email;
-		var password = request.body.password;
-		var phone = request.body.phone;
+		const username = request.body.name;
+		const email = request.body.email;
+		const password = request.body.password;
+		const phone = request.body.phone;
 
 		bcrypt.hash(password, saltRounds, async function (err, hash) {
 			// Store hash in your password DB.
@@ -179,7 +175,7 @@ try {
 }
 
 
-
+//references
 async function listDatabases(client) {
 	const databasesList = await client.db().admin().listDatabases();
 
